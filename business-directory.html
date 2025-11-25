@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clifton Education Foundation Business Directory</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        
+        /* Navigation Header */
+        .nav-header {
+            background-color: #4a4a4a;
+            padding: 15px 20px;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .nav-header a {
+            color: white;
+            text-decoration: underline;
+            margin: 0 10px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .nav-header a:hover {
+            color: #ddd;
+        }
+        
+        /* Main Container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+        }
+        
+        h1 {
+            text-align: center;
+            margin: 30px 0;
+            font-size: 2.2em;
+            color: #333;
+        }
+        
+        /* Filter Section */
+        .filter-section {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .filter-section label {
+            font-size: 16px;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+        
+        #category-filter {
+            padding: 8px 12px;
+            font-size: 14px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            min-width: 200px;
+        }
+        
+        /* Loading Message */
+        #loading-message {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+        
+        /* Records */
+        .record {
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            background-color: white;
+            border-radius: 5px;
+        }
+        
+        .record h2 {
+            margin-top: 0;
+            width: 100%;
+            color: #333;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+        
+        .record img {
+            margin-right: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .record p {
+            margin: 5px 0;
+            line-height: 1.6;
+        }
+        
+        .record strong {
+            color: #555;
+        }
+        
+        .record a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+        
+        .record a:hover {
+            text-decoration: underline;
+        }
+        
+        @media screen and (max-width: 768px) {
+            .nav-header a {
+                display: block;
+                margin: 5px 0;
+            }
+            
+            h1 {
+                font-size: 1.5em;
+            }
+            
+            .record {
+                flex-direction: column;
+            }
+            
+            .record img {
+                margin-right: 0;
+                margin-bottom: 15px;
+                width: 100%;
+                height: auto;
+            }
+            
+            #category-filter {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Header -->
+    <div class="nav-header">
+        <a href="https://cliftoneducationfoundation.org/">Home</a> |
+        <a href="https://cliftoneducationfoundation.org/about">About</a> |
+        <a href="https://cliftoneducationfoundation.org/grants-scholarships">Grants/Scholarships</a> |
+        <a href="https://cliftoneducationfoundation.org/contact">Contact</a> |
+        <a href="https://cliftoneducationfoundation.org/sponsors">Sponsors</a> |
+        <a href="https://cliftoneducationfoundation.org/donate-volunteer">Donate/Volunteer</a> |
+        <a href="https://cliftoneducationfoundation.org/testimonials-news">Testimonials/News</a>
+    </div>
+    
+    <div class="container">
+        <h1>Clifton Education Foundation Business Directory</h1>
+        
+        <div id="loading-message">Loading the Directory...</div>
+        
+        <div id="content" style="display:none">
+            <div class="filter-section">
+                <label for="category-filter">Filter by Category:</label>
+                <select id="category-filter">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            
+            <div id="records-container"></div>
+        </div>
+    </div>
+
+    <script>
+        // Fetch data from Google Apps Script
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTv6US-XoE1FKrJWM4XmdWmwKC_Ln_uMA9mA0uaZcG01FZHwQyoHCT5wUboXo_Oezq/exec';
+        
+        async function loadDirectory() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const html = await response.text();
+                
+                // Parse the HTML to extract data
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                // Get categories
+                const categorySelect = doc.querySelector('#category-filter');
+                if (categorySelect) {
+                    document.getElementById('category-filter').innerHTML = categorySelect.innerHTML;
+                }
+                
+                // Get records
+                const recordsContainer = doc.querySelector('#records-container');
+                if (recordsContainer) {
+                    document.getElementById('records-container').innerHTML = recordsContainer.innerHTML;
+                }
+                
+                // Show content, hide loading
+                document.getElementById('loading-message').style.display = 'none';
+                document.getElementById('content').style.display = 'block';
+                
+                // Setup filter
+                setupFilter();
+                
+            } catch (error) {
+                document.getElementById('loading-message').textContent = 'Error loading directory. Please refresh the page.';
+                console.error('Error:', error);
+            }
+        }
+        
+        function setupFilter() {
+            const categoryFilter = document.getElementById('category-filter');
+            const records = document.querySelectorAll('.record');
+            
+            categoryFilter.addEventListener('change', function() {
+                const selectedCategory = categoryFilter.value;
+                records.forEach(function(record) {
+                    const category = record.getAttribute('data-category');
+                    if (selectedCategory === '' || category === selectedCategory || (selectedCategory === 'All Categories' && category !== '')) {
+                        record.style.display = 'flex';
+                    } else {
+                        record.style.display = 'none';
+                    }
+                });
+            });
+        }
+        
+        // Load directory on page load
+        loadDirectory();
+    </script>
+</body>
+</html>
