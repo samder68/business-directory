@@ -182,62 +182,34 @@
     </div>
 
     <script>
-        // Fetch data from Google Apps Script
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwTv6US-XoE1FKrJWM4XmdWmwKC_Ln_uMA9mA0uaZcG01FZHwQyoHCT5wUboXo_Oezq/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwEnuCprJ_IOytj-auOGT8j9gU4V6ox0gvy2se_xbSTaYXNaHnYGcTuBYnVgqN4x7-r/exec';
         
-        async function loadDirectory() {
-            try {
-                const response = await fetch(SCRIPT_URL);
-                const html = await response.text();
-                
-                // Parse the HTML to extract data
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                
-                // Get categories
-                const categorySelect = doc.querySelector('#category-filter');
-                if (categorySelect) {
-                    document.getElementById('category-filter').innerHTML = categorySelect.innerHTML;
-                }
-                
-                // Get records
-                const recordsContainer = doc.querySelector('#records-container');
-                if (recordsContainer) {
-                    document.getElementById('records-container').innerHTML = recordsContainer.innerHTML;
-                }
-                
-                // Show content, hide loading
-                document.getElementById('loading-message').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-                
-                // Setup filter
-                setupFilter();
-                
-            } catch (error) {
-                document.getElementById('loading-message').textContent = 'Error loading directory. Please refresh the page.';
-                console.error('Error:', error);
-            }
-        }
-        
-        function setupFilter() {
-            const categoryFilter = document.getElementById('category-filter');
-            const records = document.querySelectorAll('.record');
+        function loadDirectory() {
+            // Use JSONP to bypass CORS
+            const callbackName = 'jsonpCallback' + Date.now();
             
-            categoryFilter.addEventListener('change', function() {
-                const selectedCategory = categoryFilter.value;
-                records.forEach(function(record) {
-                    const category = record.getAttribute('data-category');
-                    if (selectedCategory === '' || category === selectedCategory || (selectedCategory === 'All Categories' && category !== '')) {
-                        record.style.display = 'flex';
-                    } else {
-                        record.style.display = 'none';
-                    }
-                });
-            });
-        }
-        
-        // Load directory on page load
-        loadDirectory();
-    </script>
-</body>
-</html>
+            window[callbackName] = function(data) {
+                try {
+                    // Populate categories
+                    const categorySelect = document.getElementById('category-filter');
+                    data.categories.forEach(function(category) {
+                        const option = document.createElement('option');
+                        option.value = category;
+                        option.textContent = category;
+                        categorySelect.appendChild(option);
+                    });
+                    
+                    // Populate records
+                    const recordsContainer = document.getElementById('records-container');
+                    data.records.forEach(function(record) {
+                        const div = document.createElement('div');
+                        div.className = 'record';
+                        div.setAttribute('data-category', record[0]);
+                        
+                        let html = '';
+                        if (record[14]) {
+                            html += '<h2>' + escapeHtml(record[14]) + '</h2>';
+                        }
+                        html += '<img src="' + escapeHtml(record[13]) + '" alt="Picture" width="288" height="192">';
+                        html += '<div>';
+                        html += '<p><strong>Company:</strong> ' + escap
